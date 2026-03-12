@@ -16,6 +16,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${playfair.variable} ${inter.variable} font-sans antialiased bg-zinc-950 text-zinc-100`}
+        suppressHydrationWarning
       >
         {children}
       </body>

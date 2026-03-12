@@ -22,7 +22,7 @@ export default function Home() {
         const data = await liberteGetPosts();
         setPosts(data || []);
       } catch (error) {
-        console.error("Error loading posts:", error);
+        console.error("Error loading posts:", JSON.stringify(error, null, 2));
       } finally {
         setIsLoading(false);
       }

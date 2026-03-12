@@ -108,3 +108,99 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Create follows table
+CREATE TABLE follows (
+  follower_id UUID REFERENCES auth.users NOT NULL,
+  following_id UUID REFERENCES auth.users NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  PRIMARY KEY (follower_id, following_id)
+);
+
+ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Follows are viewable by everyone." ON follows
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can follow others." ON follows
+  FOR INSERT WITH CHECK (auth.uid() = follower_id);
+
+-- Likes table
+CREATE TABLE likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, post_id)
+);
+
+ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Likes are viewable by everyone." ON likes
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can like posts." ON likes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Notifications table
+CREATE TABLE notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  actor_id UUID REFERENCES auth.users NOT NULL,
+  type TEXT NOT NULL,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  is_read BOOLEAN DEFAULT false
+);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can see their own notifications." ON notifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Conversations table
+CREATE TABLE conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  last_message_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+
+-- Conversation participants
+CREATE TABLE conversation_participants (
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  PRIMARY KEY (conversation_id, user_id)
+);
+
+ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can see participants in their conversations." ON conversation_participants
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Messages table
+CREATE TABLE messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES auth.users NOT NULL,
+  content TEXT NOT NULL
+);
+
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can see messages in their conversations." ON messages
+  FOR SELECT USING (
+    auth.uid() IN (
+      SELECT user_id FROM conversation_participants WHERE conversation_id = messages.conversation_id
+    )
+  );
+
+CREATE POLICY "Users can send messages to their conversations." ON messages
+  FOR INSERT WITH CHECK (
+    auth.uid() = sender_id AND
+    auth.uid() IN (
+      SELECT user_id FROM conversation_participants WHERE conversation_id = messages.conversation_id
+    )
+  );
