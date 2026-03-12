@@ -15,8 +15,8 @@ export function MomentsBar() {
             try {
                 const data = await liberteGetMoments();
                 setMoments(data || []);
-            } catch (error) {
-                console.error("Error loading moments:", error);
+            } catch (error: any) {
+                console.error("Error loading moments:", JSON.stringify(error, null, 2));
             } finally {
                 setIsLoading(false);
             }

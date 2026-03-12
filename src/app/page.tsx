@@ -7,6 +7,7 @@ import { SkeletonMoments, SkeletonPost } from "@/components/SkeletonLoaders";
 import { motion, AnimatePresence } from "framer-motion";
 import { LibertePostCompose } from "@/components/liberte/PostCompose";
 import { Sidebar } from "@/components/Sidebar";
+import { Logo } from "@/components/ui/Logo";
 import { liberteGetPosts, liberteCreatePost } from "@/lib/liberte/posts";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -21,7 +22,7 @@ export default function Home() {
       try {
         const data = await liberteGetPosts();
         setPosts(data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error loading posts:", JSON.stringify(error, null, 2));
       } finally {
         setIsLoading(false);
@@ -57,10 +58,7 @@ export default function Home() {
 
         <header className="sm:hidden glass sticky top-0 z-50 px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Liberté" className="w-8 h-8 object-contain" />
-            <h1 className="font-serif text-2xl font-bold tracking-tighter text-zinc-100">
-              Liberté
-            </h1>
+            <Logo width={120} height={32} className="object-contain" />
           </div>
           <Link href="/settings" className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500" />

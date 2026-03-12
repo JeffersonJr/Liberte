@@ -1,9 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, Search, Bell, Mail, User, Settings, PlusCircle, MoreHorizontal } from "lucide-react";
+import { Home, Search, Bell, Mail, User, Settings, PlusCircle, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Logo } from "@/components/ui/Logo";
 
 interface SidebarItemProps {
     icon: React.ReactNode;
@@ -32,12 +34,13 @@ function SidebarItem({ icon, label, href, isActive }: SidebarItemProps) {
 
 export function Sidebar({ onCompose }: { onCompose: () => void }) {
     const pathname = usePathname();
+    const { user, signOut } = useAuth();
 
     return (
         <aside className="hidden sm:flex flex-col h-screen sticky top-0 py-6 px-4 lg:px-6 w-[88px] lg:w-[280px] border-r border-zinc-900 overflow-y-auto">
             <div className="mb-8 px-4">
                 <Link href="/">
-                    <img src="/logo.png" alt="Liberté" className="w-10 h-10 object-contain" />
+                    <Logo width={40} height={40} className="object-contain" />
                 </Link>
             </div>
 
@@ -69,8 +72,8 @@ export function Sidebar({ onCompose }: { onCompose: () => void }) {
                 <SidebarItem
                     icon={<User size={28} />}
                     label="Profile"
-                    href="/profile/vitor.liberte"
-                    isActive={pathname === "/profile/vitor.liberte"}
+                    href={`/profile/${user?.user_metadata?.username || user?.email?.split('@')[0] || "me"}`}
+                    isActive={pathname.startsWith("/profile")}
                 />
                 <SidebarItem
                     icon={<Settings size={28} />}
@@ -78,6 +81,16 @@ export function Sidebar({ onCompose }: { onCompose: () => void }) {
                     href="/settings"
                     isActive={pathname === "/settings"}
                 />
+
+                <motion.button
+                    whileHover={{ backgroundColor: "rgba(239, 68, 68, 0.1)", color: "rgb(248, 113, 113)" }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => signOut()}
+                    className="flex items-center gap-4 px-4 py-3 rounded-full transition-colors text-zinc-500 font-medium"
+                >
+                    <LogOut size={28} />
+                    <span className="text-xl hidden lg:block">Sair</span>
+                </motion.button>
 
                 <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -97,10 +110,9 @@ export function Sidebar({ onCompose }: { onCompose: () => void }) {
                 >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex-shrink-0" />
                     <div className="hidden lg:block text-left flex-grow min-w-0">
-                        <p className="font-bold text-sm truncate">Vitor Liberté</p>
-                        <p className="text-zinc-500 text-sm truncate">@vitor.liberte</p>
+                        <p className="font-bold text-sm truncate">{user?.user_metadata?.full_name || user?.email}</p>
+                        <p className="text-zinc-500 text-sm truncate">@{user?.user_metadata?.username || user?.email?.split('@')[0]}</p>
                     </div>
-                    <MoreHorizontal size={20} className="text-zinc-500 hidden lg:block" />
                 </motion.button>
             </div>
         </aside>

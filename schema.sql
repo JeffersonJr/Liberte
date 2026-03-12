@@ -25,7 +25,7 @@ CREATE POLICY "Users can update own profile." ON profiles
 CREATE TABLE posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
   content TEXT,
   media TEXT[] DEFAULT '{}',
   aspect_ratio TEXT DEFAULT '4/5',
@@ -57,7 +57,7 @@ CREATE TABLE moments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   expires_at TIMESTAMP WITH TIME ZONE DEFAULT (timezone('utc'::text, now()) + interval '24 hours') NOT NULL,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
   media_url TEXT NOT NULL
 );
 
@@ -77,7 +77,7 @@ CREATE POLICY "Users can delete their own moments." ON moments
 CREATE TABLE moment_views (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   moment_id UUID REFERENCES moments(id) ON DELETE CASCADE NOT NULL,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
   viewed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   UNIQUE(moment_id, user_id)
 );
@@ -111,8 +111,8 @@ CREATE TRIGGER on_auth_user_created
 
 -- Create follows table
 CREATE TABLE follows (
-  follower_id UUID REFERENCES auth.users NOT NULL,
-  following_id UUID REFERENCES auth.users NOT NULL,
+  follower_id UUID REFERENCES public.profiles(id) NOT NULL,
+  following_id UUID REFERENCES public.profiles(id) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   PRIMARY KEY (follower_id, following_id)
 );
@@ -128,7 +128,7 @@ CREATE POLICY "Users can follow others." ON follows
 -- Likes table
 CREATE TABLE likes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   UNIQUE(user_id, post_id)
@@ -146,8 +146,8 @@ CREATE POLICY "Users can like posts." ON likes
 CREATE TABLE notifications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  user_id UUID REFERENCES auth.users NOT NULL,
-  actor_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
+  actor_id UUID REFERENCES public.profiles(id) NOT NULL,
   type TEXT NOT NULL,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
   is_read BOOLEAN DEFAULT false
@@ -170,7 +170,7 @@ ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 -- Conversation participants
 CREATE TABLE conversation_participants (
   conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) NOT NULL,
   PRIMARY KEY (conversation_id, user_id)
 );
 
@@ -184,7 +184,7 @@ CREATE TABLE messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
-  sender_id UUID REFERENCES auth.users NOT NULL,
+  sender_id UUID REFERENCES public.profiles(id) NOT NULL,
   content TEXT NOT NULL
 );
 
