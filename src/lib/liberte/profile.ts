@@ -43,6 +43,20 @@ export async function liberteGetProfile(userId: string): Promise<LiberteProfile>
 }
 
 /**
+ * Fetch a user profile by username
+ */
+export async function liberteGetProfileByUsername(username: string): Promise<LiberteProfile> {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+    if (error) throw error;
+    return liberteGetProfile(data.id);
+}
+
+/**
  * Update a user profile
  */
 export async function liberteUpdateProfile(userId: string, updates: Partial<LiberteProfile>) {

@@ -51,22 +51,26 @@ export function Sidebar({ onCompose }: { onCompose: () => void }) {
                 <SidebarItem
                     icon={<Search size={28} />}
                     label="Explore"
-                    href="#"
+                    href="/explore"
+                    isActive={pathname === "/explore"}
                 />
                 <SidebarItem
                     icon={<Bell size={28} />}
                     label="Notifications"
-                    href="#"
+                    href="/notifications"
+                    isActive={pathname === "/notifications"}
                 />
                 <SidebarItem
                     icon={<Mail size={28} />}
                     label="Messages"
-                    href="#"
+                    href="/messages"
+                    isActive={pathname.startsWith("/messages")}
                 />
                 <SidebarItem
                     icon={<User size={28} />}
                     label="Profile"
-                    href="#"
+                    href="/profile/vitor.liberte"
+                    isActive={pathname === "/profile/vitor.liberte"}
                 />
                 <SidebarItem
                     icon={<Settings size={28} />}
