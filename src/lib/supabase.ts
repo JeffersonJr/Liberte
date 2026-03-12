@@ -14,3 +14,4 @@ export const supabase = createClient(
     isInvalid ? 'https://placeholder.supabase.co' : supabaseUrl,
     isInvalid ? 'placeholder' : supabaseAnonKey
 )
+
