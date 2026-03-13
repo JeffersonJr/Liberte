@@ -18,17 +18,26 @@ export async function liberteCreateMoment(userId: string, media: string) {
 
 export async function liberteGetMoments() {
     const now = new Date().toISOString()
-    const { data, error } = await supabase
+    const { data: moments, error: momentsError } = await supabase
         .from('moments')
-        .select(`
-      *,
-      profiles (username, avatar_url)
-    `)
+        .select('*')
         .gt('expires_at', now)
         .order('created_at', { ascending: false })
 
-    if (error) throw error
-    return data
+    if (momentsError) throw momentsError
+    if (!moments || moments.length === 0) return []
+
+    const userIds = [...new Set(moments.map((m: any) => m.user_id))].filter(Boolean)
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('username, avatar_url, id')
+        .in('id', userIds)
+
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]))
+    return moments.map((moment: any) => ({
+        ...moment,
+        profiles: profileMap[moment.user_id] || null
+    }))
 }
 
 export async function liberteRecordMomentView(userId: string, momentId: string) {

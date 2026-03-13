@@ -35,7 +35,7 @@ export function MomentsBar() {
     if (isLoading) return <div className="h-28" />; // Loading placeholder
 
     return (
-        <div className="w-full py-4 border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40 overflow-x-auto no-scrollbar">
+        <div className="w-full py-4 border-b border-border bg-background/50 backdrop-blur-md sticky top-0 z-40 overflow-x-auto no-scrollbar">
             <div className="flex gap-4 px-4 min-w-max">
                 {moments.map((moment, idx) => (
                     <motion.div
@@ -48,7 +48,7 @@ export function MomentsBar() {
                         <div
                             className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 to-rose-600"
                         >
-                            <div className="p-[2px] bg-black rounded-full">
+                            <div className="p-[2px] bg-background rounded-full">
                                 <img
                                     src={moment.profiles?.avatar_url || "https://i.pravatar.cc/150"}
                                     alt={moment.profiles?.username}
@@ -56,7 +56,7 @@ export function MomentsBar() {
                                 />
                             </div>
                         </div>
-                        <span className="text-[10px] text-zinc-400 font-medium truncate w-16 text-center">
+                        <span className="text-[10px] text-muted-foreground font-medium truncate w-16 text-center">
                             {moment.profiles?.username || "anonymous"}
                         </span>
                     </motion.div>

@@ -46,7 +46,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-black text-zinc-100">
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background text-foreground transition-colors duration-300">
             {/* Background Orbs */}
             <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-500/10 rounded-full blur-[128px] animate-pulse" />
             <div className="absolute bottom-0 -right-4 w-72 h-72 bg-blue-500/10 rounded-full blur-[128px] animate-pulse delay-700" />
@@ -57,10 +57,10 @@ export default function LoginPage() {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <div className="bg-zinc-900/40 backdrop-blur-2xl border border-zinc-800/50 p-8 rounded-3xl shadow-2xl space-y-8">
+                <div className="bg-foreground/5 backdrop-blur-2xl border border-border p-8 rounded-3xl shadow-2xl space-y-8">
                     <div className="text-center space-y-4">
-                        <Logo width={200} height={50} className="mx-auto" />
-                        <p className="text-zinc-400">
+                        <Logo width={250} height={60} className="mx-auto" />
+                        <p className="text-muted-foreground font-medium">
                             Entre para continuar sua jornada
                         </p>
                     </div>
@@ -115,11 +115,11 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    <p className="text-center text-zinc-500 text-sm">
+                    <p className="text-center text-muted-foreground text-sm">
                         Não tem uma conta?{" "}
                         <Link
                             href="/signup"
-                            className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+                            className="text-emerald-500 hover:text-emerald-400 font-bold transition-colors underline decoration-emerald-500/30 underline-offset-4"
                         >
                             Cadastre-se
                         </Link>

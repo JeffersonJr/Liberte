@@ -4,18 +4,26 @@ import { supabase } from '../supabase';
  * Search for posts based on a query string
  */
 export async function liberteSearchPosts(query: string) {
-    const { data, error } = await supabase
+    const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select(`
-            *,
-            profiles:user_id (username, full_name, avatar_url)
-        `)
-        .ilike('content', `%${query}%`)
+        .select('*')
+        .textSearch('content', query)
         .order('created_at', { ascending: false })
-        .limit(20);
 
-    if (error) throw error;
-    return data;
+    if (postsError) throw postsError
+    if (!posts || posts.length === 0) return []
+
+    const userIds = [...new Set(posts.map((p: any) => p.user_id))].filter(Boolean)
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url, id')
+        .in('id', userIds)
+
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]))
+    return posts.map((post: any) => ({
+        ...post,
+        profiles: profileMap[post.user_id] || null
+    }))
 }
 
 /**
@@ -39,35 +47,51 @@ export async function liberteGetTrendingPosts() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const { data, error } = await supabase
+    const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select(`
-            *,
-            profiles:user_id (username, full_name, avatar_url)
-        `)
+        .select('*')
         .gt('created_at', sevenDaysAgo.toISOString())
         .order('likes_count', { ascending: false })
-        .limit(10);
+        .limit(10)
 
-    if (error) throw error;
-    return data;
+    if (postsError) throw postsError
+    if (!posts || posts.length === 0) return []
+
+    const userIds = [...new Set(posts.map((p: any) => p.user_id))].filter(Boolean)
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url, id')
+        .in('id', userIds)
+
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]))
+    return posts.map((post: any) => ({
+        ...post,
+        profiles: profileMap[post.user_id] || null
+    }))
 }
 
 /**
  * Get discovery feed (random or high engagement posts)
  */
 export async function liberteGetDiscoveryFeed() {
-    const { data, error } = await supabase
+    const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select(`
-            *,
-            profiles:user_id (username, full_name, avatar_url)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
-        .limit(30);
+        .limit(20)
 
-    if (error) throw error;
+    if (postsError) throw postsError
+    if (!posts || posts.length === 0) return []
 
-    // In a real app, you'd shuffle or use a more complex recommendation engine
-    return data;
+    const userIds = [...new Set(posts.map((p: any) => p.user_id))].filter(Boolean)
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url, id')
+        .in('id', userIds)
+
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]))
+    return posts.map((post: any) => ({
+        ...post,
+        profiles: profileMap[post.user_id] || null
+    }))
 }

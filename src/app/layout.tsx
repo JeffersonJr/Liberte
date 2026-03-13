@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { playfair, inter } from "./fonts";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { AuthProvider } from "@/components/auth/AuthProvider";
+import { Providers } from "@/components/Providers";
 import { FaviconProvider } from "@/components/FaviconProvider";
 
 export const metadata: Metadata = {
@@ -19,18 +18,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} font-sans antialiased bg-zinc-950 text-zinc-100`}
+        className={`${playfair.variable} ${inter.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider>
-            <FaviconProvider />
-            {children}
-          </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+          <FaviconProvider />
+          {children}
+        </Providers>
       </body>
     </html>
   );
 }
+

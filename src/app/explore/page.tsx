@@ -15,13 +15,39 @@ import {
 } from "@/lib/liberte/explore";
 import debounce from "lodash/debounce";
 
+import { useAuth } from "@/components/auth/AuthProvider";
+import { liberteFollowUser } from "@/lib/liberte/profile";
+import { liberteCreatePost } from "@/lib/liberte/posts";
+
 export default function ExplorePage() {
+    const { user: currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isComposeOpen, setIsComposeOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [posts, setPosts] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<"discovery" | "trending" | "users">("discovery");
+
+    const handleFollowUser = async (targetId: string) => {
+        if (!currentUser) return;
+        try {
+            await liberteFollowUser(currentUser.id, targetId);
+            // Update UI state if needed
+        } catch (error) {
+            console.error("Error following user:", error);
+        }
+    };
+
+    const handleCreatePost = async (content: string, media: string[]) => {
+        if (!currentUser) return;
+        try {
+            await liberteCreatePost(currentUser.id, content, media);
+            setIsComposeOpen(false);
+            if (activeTab === "discovery") loadDiscovery();
+        } catch (error) {
+            console.error("Error creating post:", error);
+        }
+    };
 
     const loadDiscovery = async () => {
         setIsLoading(true);
@@ -95,7 +121,7 @@ export default function ExplorePage() {
                 <LibertePostCompose
                     isOpen={isComposeOpen}
                     onClose={() => setIsComposeOpen(false)}
-                    onSubmit={async () => { }} // Handle separately or refresh
+                    onSubmit={handleCreatePost}
                 />
 
                 <header className="glass sticky top-0 z-50 px-4 py-4 flex flex-col gap-4">
@@ -188,7 +214,10 @@ export default function ExplorePage() {
                                                     <p className="text-zinc-500">@{user.username}</p>
                                                 </div>
                                             </div>
-                                            <button className="bg-zinc-100 text-black px-4 py-1.5 rounded-full font-bold text-sm hover:bg-white transition-colors">
+                                            <button
+                                                onClick={() => handleFollowUser(user.id)}
+                                                className="bg-zinc-100 text-black px-4 py-1.5 rounded-full font-bold text-sm hover:bg-white transition-colors"
+                                            >
                                                 Follow
                                             </button>
                                         </div>

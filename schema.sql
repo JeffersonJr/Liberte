@@ -6,6 +6,8 @@ CREATE TABLE profiles (
   full_name TEXT,
   avatar_url TEXT,
   website TEXT,
+  bio TEXT,
+  preferences JSONB DEFAULT '{}',
   CONSTRAINT username_length CHECK (char_length(username) >= 3)
 );
 

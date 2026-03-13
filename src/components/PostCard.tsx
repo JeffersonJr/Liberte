@@ -33,7 +33,7 @@ export function PostCard({ post }: PostProps) {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="w-full max-w-2xl mx-auto border-b border-zinc-900 py-6 px-4 md:px-0 snap-start"
+            className="w-full max-w-2xl mx-auto border-b border-border py-6 px-4 md:px-0 snap-start"
         >
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
@@ -47,17 +47,17 @@ export function PostCard({ post }: PostProps) {
                 <div className="flex-grow min-w-0">
                     <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                            <span className="font-serif text-lg font-bold leading-none">{post.user.name}</span>
-                            <span className="text-zinc-500 text-sm">@{post.user.handle}</span>
+                            <span className="font-serif text-lg font-bold leading-none text-foreground">{post.user.name}</span>
+                            <span className="text-muted-foreground text-sm">@{post.user.handle}</span>
                             <span className="text-zinc-600">·</span>
-                            <span className="text-zinc-500 text-sm font-medium tracking-tight">
+                            <span className="text-muted-foreground text-sm font-medium tracking-tight">
                                 {post.timestamp}
                             </span>
                         </div>
                         <LiberteContextMenu isOwn={post.isOwn || false} />
                     </div>
 
-                    <p className="text-zinc-200 text-[17px] leading-relaxed mb-4 whitespace-pre-wrap">
+                    <p className="text-foreground/90 text-[17px] leading-relaxed mb-4 whitespace-pre-wrap">
                         {post.content}
                     </p>
 
@@ -70,7 +70,7 @@ export function PostCard({ post }: PostProps) {
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between max-w-md text-zinc-500">
+                    <div className="flex items-center justify-between max-w-md text-muted-foreground">
                         <motion.button
                             whileTap={{ scale: 0.8 }}
                             onClick={() => setIsLiked(!isLiked)}
@@ -104,9 +104,9 @@ export function PostCard({ post }: PostProps) {
 
                         <motion.button
                             whileTap={{ scale: 0.8 }}
-                            className="group flex items-center gap-2 hover:text-zinc-200 transition-colors"
+                            className="group flex items-center gap-2 hover:text-foreground transition-colors"
                         >
-                            <div className="p-2 rounded-full group-hover:bg-zinc-700/20">
+                            <div className="p-2 rounded-full group-hover:bg-foreground/10">
                                 <Share2 size={20} />
                             </div>
                         </motion.button>

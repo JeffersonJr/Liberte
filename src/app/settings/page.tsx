@@ -1,18 +1,37 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronLeft, User, Shield, Bell, Eye, LogOut } from "lucide-react";
+import { ChevronLeft, User, Shield, Bell, Eye, LogOut, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 
+import { useAuth } from "@/components/auth/AuthProvider";
+import { seedMockData } from "@/lib/liberte/mockData";
+import { useState } from "react";
+
 export default function SettingsPage() {
+    const { user, signOut } = useAuth();
+    const [isSeeding, setIsSeeding] = useState(false);
+
+    const handleSeedData = async () => {
+        if (!user) return;
+        setIsSeeding(true);
+        const result = await seedMockData(user.id);
+        setIsSeeding(false);
+        if (result.success) {
+            alert("Mock data generated successfully! Refresh to see changes.");
+        } else {
+            alert("Error generating mock data. Check console.");
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex justify-center">
+        <div className="min-h-screen bg-background text-foreground font-sans flex justify-center">
             <Sidebar onCompose={() => { }} />
 
-            <main className="flex-grow max-w-xl border-x border-zinc-900 min-h-screen">
+            <main className="flex-grow max-w-2xl border-x border-border min-h-screen">
                 <header className="glass sticky top-0 z-50 px-4 py-4 flex items-center gap-4">
-                    <Link href="/" className="sm:hidden p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
+                    <Link href="/" className="sm:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors">
                         <ChevronLeft size={24} />
                     </Link>
                     <h1 className="font-serif text-2xl font-bold tracking-tighter">Settings</h1>
@@ -20,24 +39,40 @@ export default function SettingsPage() {
 
                 <div className="p-4 space-y-8">
                     <section>
-                        <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Account</h2>
-                        <div className="glass rounded-3xl overflow-hidden divide-y divide-zinc-900">
-                            <SettingsItem icon={<User size={20} />} label="Edit Profile" />
-                            <SettingsItem icon={<Shield size={20} />} label="Security & Privacy" />
-                            <SettingsItem icon={<Bell size={20} />} label="Notifications" />
+                        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Account</h2>
+                        <div className="glass rounded-3xl overflow-hidden divide-y divide-border">
+                            <SettingsItem icon={<User size={20} />} label="Edit Profile" href="/settings/profile" />
+                            <SettingsItem icon={<Shield size={20} />} label="Security & Privacy" href="/settings/security" />
+                            <SettingsItem icon={<Bell size={20} />} label="Notifications" href="/settings/notifications" />
                         </div>
                     </section>
 
                     <section>
-                        <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Preference</h2>
-                        <div className="glass rounded-3xl overflow-hidden divide-y divide-zinc-900">
-                            <SettingsItem icon={<Eye size={20} />} label="Display & Theme" />
+                        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Preference</h2>
+                        <div className="glass rounded-3xl overflow-hidden divide-y divide-border">
+                            <SettingsItem icon={<Eye size={20} />} label="Display & Theme" href="/settings/display" />
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Development</h2>
+                        <div className="glass rounded-3xl overflow-hidden">
+                            <button
+                                onClick={handleSeedData}
+                                disabled={isSeeding}
+                                className="flex items-center gap-4 w-full p-4 text-emerald-500 hover:bg-emerald-500/10 transition-colors font-bold disabled:opacity-50"
+                            >
+                                <PlusCircle size={20} /> {isSeeding ? "Generating..." : "Seed Mock Data"}
+                            </button>
                         </div>
                     </section>
 
                     <section>
                         <div className="glass rounded-3xl overflow-hidden">
-                            <button className="flex items-center gap-4 w-full p-4 text-rose-500 hover:bg-rose-500/10 transition-colors font-bold">
+                            <button
+                                onClick={() => signOut()}
+                                className="flex items-center gap-4 w-full p-4 text-rose-500 hover:bg-rose-500/10 transition-colors font-bold"
+                            >
                                 <LogOut size={20} /> Logout
                             </button>
                         </div>
@@ -48,15 +83,15 @@ export default function SettingsPage() {
     );
 }
 
-function SettingsItem({ icon, label }: { icon: React.ReactNode; label: string }) {
+function SettingsItem({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
     return (
-        <button className="flex items-center justify-between w-full p-4 hover:bg-zinc-800/50 transition-colors">
+        <Link href={href} className="flex items-center justify-between w-full p-4 hover:bg-foreground/5 transition-colors">
             <div className="flex items-center gap-4">
-                <div className="text-zinc-500">{icon}</div>
+                <div className="text-muted-foreground">{icon}</div>
                 <span className="font-medium">{label}</span>
             </div>
-            <ChevronRight size={18} className="text-zinc-700" />
-        </button>
+            <ChevronRight size={18} className="text-muted-foreground/30" />
+        </Link>
     );
 }
 

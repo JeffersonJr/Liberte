@@ -20,11 +20,11 @@ export function Logo({ className, width = 120, height = 40 }: LogoProps) {
     }, []);
 
     if (!mounted) {
-        return <div style={{ width, height }} className={className} />;
+        return <div style={{ width: `${width}px`, height: `${height}px` }} className={className} />;
     }
 
     const isDark = resolvedTheme === "dark";
-    const src = isDark ? "/logo white.svg" : "/logo.svg";
+    const src = isDark ? "/logo%20white.svg" : "/logo.svg";
 
     return (
         <Image
@@ -33,6 +33,7 @@ export function Logo({ className, width = 120, height = 40 }: LogoProps) {
             width={width}
             height={height}
             className={className}
+            style={{ width: 'auto', height: 'auto', maxHeight: '100%', maxWidth: '100%' }}
             priority
         />
     );

@@ -7,7 +7,8 @@ export interface LiberteProfile {
     full_name: string;
     avatar_url: string;
     website?: string;
-    bio?: string; // If added to schema
+    bio?: string;
+    preferences?: any;
     followers_count?: number;
     following_count?: number;
 }
@@ -75,17 +76,26 @@ export async function liberteUpdateProfile(userId: string, updates: Partial<Libe
  * Fetch all posts by a specific user
  */
 export async function liberteGetUserPosts(userId: string) {
-    const { data, error } = await supabase
+    const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select(`
-            *,
-            profiles:user_id (username, full_name, avatar_url)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+    if (postsError) throw postsError;
+    if (!posts || posts.length === 0) return []
+
+    const userIds = [...new Set(posts.map((p: any) => p.user_id))].filter(Boolean)
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar_url, id')
+        .in('id', userIds)
+
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]))
+    return posts.map((post: any) => ({
+        ...post,
+        profiles: profileMap[post.user_id] || null
+    }))
 }
 
 /**
@@ -124,32 +134,44 @@ export async function liberteUnfollowUser(followerId: string, followingId: strin
  * Get followers list
  */
 export async function liberteGetFollowers(userId: string) {
-    const { data, error } = await supabase
+    const { data: follows, error: followsError } = await supabase
         .from('follows')
-        .select(`
-            follower_id,
-            profiles:follower_id (*)
-        `)
+        .select('follower_id')
         .eq('following_id', userId);
 
-    if (error) throw error;
-    return data.map((d: any) => d.profiles);
+    if (followsError) throw followsError;
+    if (!follows || follows.length === 0) return []
+
+    const followerIds = follows.map((f: any) => f.follower_id)
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', followerIds)
+
+    if (profilesError) throw profilesError
+    return profiles || []
 }
 
 /**
  * Get following list
  */
 export async function liberteGetFollowing(userId: string) {
-    const { data, error } = await supabase
+    const { data: follows, error: followsError } = await supabase
         .from('follows')
-        .select(`
-            following_id,
-            profiles:following_id (*)
-        `)
+        .select('following_id')
         .eq('follower_id', userId);
 
-    if (error) throw error;
-    return data.map((d: any) => d.profiles);
+    if (followsError) throw followsError;
+    if (!follows || follows.length === 0) return []
+
+    const followingIds = follows.map((f: any) => f.following_id)
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', followingIds)
+
+    if (profilesError) throw profilesError
+    return profiles || []
 }
 
 /**

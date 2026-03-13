@@ -16,22 +16,23 @@ import {
     liberteGetNotifications,
     liberteMarkNotificationAsRead
 } from "@/lib/liberte/notifications";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { formatDistanceToNow } from "date-fns";
 
 export default function NotificationsPage() {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isComposeOpen, setIsComposeOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [activeFilter, setActiveFilter] = useState<"all" | "mentions">("all");
 
-    // Placeholder user ID
-    const userId = "00000000-0000-0000-0000-000000000000";
-
     useEffect(() => {
+        if (!user) return;
+
         async function loadNotifications() {
             setIsLoading(true);
             try {
-                const data = await liberteGetNotifications(userId);
+                const data = await liberteGetNotifications(user!.id);
                 setNotifications(data || []);
             } catch (error) {
                 console.error("Error loading notifications:", error);
@@ -40,7 +41,7 @@ export default function NotificationsPage() {
             }
         }
         loadNotifications();
-    }, []);
+    }, [user]);
 
     const handleMarkAsRead = async (id: string) => {
         try {

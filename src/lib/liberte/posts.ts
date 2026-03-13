@@ -58,16 +58,31 @@ export async function liberteRepostPost(userId: string, repostId: string) {
 }
 
 export async function liberteGetPosts() {
-    const { data, error } = await supabase
+    const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select(`
-      *,
-      profiles (username, avatar_url, full_name)
-    `)
+        .select('*')
         .order('created_at', { ascending: false })
 
-    if (error) throw error
-    return data
+    if (postsError) throw postsError
+    if (!posts || posts.length === 0) return []
+
+    // Manual join for profiles
+    const userIds = [...new Set(posts.map((p: any) => p.user_id))].filter(Boolean)
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url, full_name')
+        .in('id', userIds)
+
+    if (profilesError) {
+        console.error("Error fetching profiles for posts:", profilesError)
+        return posts // Return posts without profiles if profiling fails
+    }
+
+    const profileMap = Object.fromEntries(profiles.map((p: any) => [p.id, p]))
+    return posts.map((post: any) => ({
+        ...post,
+        profiles: profileMap[post.user_id] || null
+    }))
 }
 
 export async function liberteDeletePost(postId: string) {

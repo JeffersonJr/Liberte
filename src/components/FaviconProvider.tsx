@@ -8,7 +8,8 @@ export function FaviconProvider() {
 
     useEffect(() => {
         const updateFavicon = () => {
-            const faviconHref = "/fav.svg";
+            const isDark = resolvedTheme === "dark";
+            const faviconHref = isDark ? "/fav%20white.svg" : "/fav.svg";
 
             let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
 

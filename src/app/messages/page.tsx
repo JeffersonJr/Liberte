@@ -9,9 +9,11 @@ import {
     liberteGetMessages,
     liberteSendMessage
 } from "@/lib/liberte/messages";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { formatDistanceToNow } from "date-fns";
 
 export default function MessagesPage() {
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [conversations, setConversations] = useState<any[]>([]);
     const [selectedConv, setSelectedConv] = useState<any>(null);
@@ -19,8 +21,6 @@ export default function MessagesPage() {
     const [newMessage, setNewMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
 
-    // Placeholder user ID
-    const userId = "00000000-0000-0000-0000-000000000000";
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -28,10 +28,11 @@ export default function MessagesPage() {
     };
 
     useEffect(() => {
+        if (!user) return;
         async function loadConversations() {
             setIsLoading(true);
             try {
-                const data = await liberteGetConversations(userId);
+                const data = await liberteGetConversations(user!.id);
                 setConversations(data || []);
             } catch (error) {
                 console.error("Error loading conversations:", error);
@@ -40,7 +41,7 @@ export default function MessagesPage() {
             }
         }
         loadConversations();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         if (selectedConv) {
@@ -59,11 +60,11 @@ export default function MessagesPage() {
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !selectedConv || isSending) return;
+        if (!newMessage.trim() || !selectedConv || isSending || !user) return;
 
         setIsSending(true);
         try {
-            const data = await liberteSendMessage(userId, selectedConv.id, newMessage);
+            const data = await liberteSendMessage(user.id, selectedConv.id, newMessage);
             setMessages([...messages, data]);
             setNewMessage("");
             setTimeout(scrollToBottom, 50);
@@ -75,14 +76,14 @@ export default function MessagesPage() {
     };
 
     const getOtherParticipant = (participants: any[]) => {
-        return participants.find(p => p.user_id !== userId) || participants[0];
+        return participants.find(p => p.user_id !== user?.id) || participants[0];
     };
 
     return (
         <div className="min-h-screen bg-zinc-950 flex justify-center">
             <Sidebar onCompose={() => { }} />
 
-            <main className="flex-grow max-w-4xl border-x border-zinc-900 min-h-screen flex">
+            <main className="flex-grow max-w-2xl border-x border-zinc-900 min-h-screen flex">
                 {/* Conversation List */}
                 <div className={`w-full md:w-80 flex-shrink-0 border-r border-zinc-900 flex flex-col ${selectedConv ? 'hidden md:flex' : 'flex'}`}>
                     <header className="glass sticky top-0 z-10 px-4 py-4 backdrop-blur-xl border-b border-zinc-900">
@@ -177,16 +178,16 @@ export default function MessagesPage() {
                                 {messages.map((msg) => (
                                     <div
                                         key={msg.id}
-                                        className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
+                                        className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div
-                                            className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${msg.sender_id === userId
-                                                    ? 'bg-zinc-100 text-black rounded-tr-none'
-                                                    : 'bg-zinc-900 text-zinc-100 rounded-tl-none border border-zinc-800'
+                                            className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${msg.sender_id === user?.id
+                                                ? 'bg-zinc-100 text-black rounded-tr-none'
+                                                : 'bg-zinc-900 text-zinc-100 rounded-tl-none border border-zinc-800'
                                                 }`}
                                         >
                                             <p>{msg.content}</p>
-                                            <p className={`text-[10px] mt-1 ${msg.sender_id === userId ? 'text-zinc-500' : 'text-zinc-600'}`}>
+                                            <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-zinc-500' : 'text-zinc-600'}`}>
                                                 {formatDistanceToNow(new Date(msg.created_at))} ago
                                             </p>
                                         </div>
